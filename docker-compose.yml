@@ -1,0 +1,40 @@
+version: "3.8"
+
+services:
+  postgres:
+    image: postgres:17-alpine
+    container_name: hospital_postgres_dev
+    environment:
+      POSTGRES_USER: ${DB_USERNAME}
+      POSTGRES_PASSWORD: ${DB_PASSWORD}
+      POSTGRES_DB: ${DB_NAME}
+      TZ: Asia/Bangkok
+
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    healthcheck: # ตรวจสอบว่า DB พร้อมทำงานจริงๆ หรือยัง
+      test: ["CMD-SHELL", "pg_isready -U ${DB_USER} -d ${DB_NAME}"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+    ports:
+      - "5432:5432"
+    restart: always
+
+  pgadmin:
+    image: dpage/pgadmin4:latest
+    container_name: hospital_pgadmin_dev
+    environment:
+      PGADMIN_DEFAULT_EMAIL: ${PGADMIN_DEFAULT_EMAIL}
+      PGADMIN_DEFAULT_PASSWORD: ${PGADMIN_DEFAULT_PASSWORD}
+    ports:
+      - 5053:80
+    depends_on:
+      - postgres
+    volumes:
+      - pgadmin_data:/var/lib/pgadmin
+    restart: always
+volumes:
+  postgres_data:
+  pgadmin_data: 
+  # network:
